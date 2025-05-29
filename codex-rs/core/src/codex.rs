@@ -394,6 +394,17 @@ impl Session {
             .await
     }
 
+    pub async fn read_resource(
+        &self,
+        server: &str,
+        uri: String,
+        timeout: Option<Duration>,
+    ) -> anyhow::Result<mcp_types::ReadResourceResult> {
+        self.mcp_connection_manager
+            .read_resource(server, uri, timeout)
+            .await
+    }
+
     pub fn abort(&self) {
         info!("Aborting existing session");
         let mut state = self.state.lock().unwrap();

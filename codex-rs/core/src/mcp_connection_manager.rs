@@ -16,6 +16,7 @@ use codex_mcp_client::McpClient;
 use mcp_types::ClientCapabilities;
 use mcp_types::Implementation;
 use mcp_types::Tool;
+use serde_json::json;
 use tokio::task::JoinSet;
 use tracing::info;
 
@@ -37,6 +38,20 @@ pub type ClientStartErrors = HashMap<String, anyhow::Error>;
 
 fn fully_qualified_tool_name(server: &str, tool: &str) -> String {
     format!("{server}{MCP_TOOL_NAME_DELIMITER}{tool}")
+}
+
+fn codex_client_capabilities() -> ClientCapabilities {
+    let experimental = json!({
+        "codex": {
+            "uiCapabilities": ["image-uri", "table", "chart"]
+        }
+    });
+
+    ClientCapabilities {
+        experimental: Some(experimental),
+        roots: None,
+        sampling: None,
+    }
 }
 
 pub(crate) fn try_parse_fully_qualified_tool_name(fq_name: &str) -> Option<(String, String)> {
@@ -89,11 +104,7 @@ impl McpConnectionManager {
                     Ok(client) => {
                         // Initialize the client.
                         let params = mcp_types::InitializeRequestParams {
-                            capabilities: ClientCapabilities {
-                                experimental: None,
-                                roots: None,
-                                sampling: None,
-                            },
+                            capabilities: codex_client_capabilities(),
                             client_info: Implementation {
                                 name: "codex-mcp-client".to_owned(),
                                 version: env!("CARGO_PKG_VERSION").to_owned(),
@@ -161,6 +172,25 @@ impl McpConnectionManager {
             .call_tool(tool.to_string(), arguments, timeout)
             .await
             .with_context(|| format!("tool call failed for `{server}/{tool}`"))
+    }
+
+    /// Read an MCP resource by URI from the specified server.
+    pub async fn read_resource(
+        &self,
+        server: &str,
+        uri: String,
+        timeout: Option<Duration>,
+    ) -> Result<mcp_types::ReadResourceResult> {
+        let client = self
+            .clients
+            .get(server)
+            .ok_or_else(|| anyhow!("unknown MCP server '{server}'"))?
+            .clone();
+
+        client
+            .read_resource(uri, timeout)
+            .await
+            .with_context(|| format!("resource read failed for `{server}`"))
     }
 }
 
