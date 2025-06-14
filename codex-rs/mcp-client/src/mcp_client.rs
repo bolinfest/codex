@@ -349,6 +349,17 @@ impl McpClient {
         self.send_request::<CallToolRequest>(params, timeout).await
     }
 
+    /// Convenience wrapper around `resources/read`.
+    pub async fn read_resource(
+        &self,
+        uri: String,
+        timeout: Option<Duration>,
+    ) -> Result<mcp_types::ReadResourceResult> {
+        let params = mcp_types::ReadResourceRequestParams { uri };
+        self.send_request::<mcp_types::ReadResourceRequest>(params, timeout)
+            .await
+    }
+
     /// Internal helper: route a JSON-RPC *response* object to the pending map.
     async fn dispatch_response(
         resp: JSONRPCResponse,
