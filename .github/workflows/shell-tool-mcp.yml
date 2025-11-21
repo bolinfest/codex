@@ -187,9 +187,9 @@ jobs:
             apt-get update
             DEBIAN_FRONTEND=noninteractive apt-get install -y git build-essential bison autoconf texinfo gettext
           elif command -v dnf >/dev/null 2>&1; then
-            dnf install -y git gcc gcc-c++ make bison gettext
+            dnf install -y git gcc gcc-c++ make bison autoconf texinfo gettext
           elif command -v yum >/dev/null 2>&1; then
-            yum install -y git gcc gcc-c++ make bison gettext
+            yum install -y git gcc gcc-c++ make bison autoconf texinfo gettext
           else
             echo "Unsupported package manager in container"
             exit 1
