@@ -12,7 +12,6 @@
   "files": [
     "bin",
     "vendor",
-    "patches",
     "README.md"
   ],
   "repository": {

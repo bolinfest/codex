@@ -134,50 +134,50 @@ jobs:
             target: x86_64-unknown-linux-musl
             variant: ubuntu-24.04
             image: ubuntu:24.04
-          - runner: ubuntu-24.04
-            target: x86_64-unknown-linux-musl
-            variant: ubuntu-22.04
-            image: ubuntu:22.04
-          - runner: ubuntu-24.04
-            target: x86_64-unknown-linux-musl
-            variant: ubuntu-20.04
-            image: ubuntu:20.04
-          - runner: ubuntu-24.04
-            target: x86_64-unknown-linux-musl
-            variant: debian-12
-            image: debian:12
-          - runner: ubuntu-24.04
-            target: x86_64-unknown-linux-musl
-            variant: debian-11
-            image: debian:11
-          - runner: ubuntu-24.04
-            target: x86_64-unknown-linux-musl
-            variant: centos-9
-            image: quay.io/centos/centos:stream9
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: ubuntu-24.04
-            image: arm64v8/ubuntu:24.04
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: ubuntu-22.04
-            image: arm64v8/ubuntu:22.04
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: ubuntu-20.04
-            image: arm64v8/ubuntu:20.04
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: debian-12
-            image: arm64v8/debian:12
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: debian-11
-            image: arm64v8/debian:11
-          - runner: ubuntu-24.04-arm
-            target: aarch64-unknown-linux-musl
-            variant: centos-9
-            image: quay.io/centos/centos:stream9
+          # - runner: ubuntu-24.04
+          #   target: x86_64-unknown-linux-musl
+          #   variant: ubuntu-22.04
+          #   image: ubuntu:22.04
+          # - runner: ubuntu-24.04
+          #   target: x86_64-unknown-linux-musl
+          #   variant: ubuntu-20.04
+          #   image: ubuntu:20.04
+          # - runner: ubuntu-24.04
+          #   target: x86_64-unknown-linux-musl
+          #   variant: debian-12
+          #   image: debian:12
+          # - runner: ubuntu-24.04
+          #   target: x86_64-unknown-linux-musl
+          #   variant: debian-11
+          #   image: debian:11
+          # - runner: ubuntu-24.04
+          #   target: x86_64-unknown-linux-musl
+          #   variant: centos-9
+          #   image: quay.io/centos/centos:stream9
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: ubuntu-24.04
+          #   image: arm64v8/ubuntu:24.04
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: ubuntu-22.04
+          #   image: arm64v8/ubuntu:22.04
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: ubuntu-20.04
+          #   image: arm64v8/ubuntu:20.04
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: debian-12
+          #   image: arm64v8/debian:12
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: debian-11
+          #   image: arm64v8/debian:11
+          # - runner: ubuntu-24.04-arm
+          #   target: aarch64-unknown-linux-musl
+          #   variant: centos-9
+          #   image: quay.io/centos/centos:stream9
     steps:
       - name: Install build prerequisites
         shell: bash
@@ -308,7 +308,9 @@ jobs:
           set -euo pipefail
           staging="${STAGING_DIR}"
           mkdir -p "$staging" "$staging/vendor"
-          rsync -av --exclude vendor shell-tool-mcp/ "$staging/"
+          cp shell-tool-mcp/README.md "$staging/"
+          cp shell-tool-mcp/package.json "$staging/"
+          cp -R shell-tool-mcp/bin "$staging/"
 
           found_vendor="false"
           shopt -s nullglob
@@ -337,10 +339,6 @@ jobs:
         env:
           STAGING_DIR: ${{ runner.temp }}/shell-tool-mcp
 
-      - name: Install JS dependencies in staging
-        run: |
-          pnpm install --frozen-lockfile --ignore-scripts --dir "${{ steps.staging.outputs.dir }}"
-
       - name: Ensure binaries are executable
         run: |
           set -euo pipefail
@@ -356,7 +354,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist/npm
           staging="${{ steps.staging.outputs.dir }}"
-          pack_info=$(cd "$staging" && npm pack --json --pack-destination "${GITHUB_WORKSPACE}/dist/npm")
+          pack_info=$(cd "$staging" && npm pack --ignore-scripts --json --pack-destination "${GITHUB_WORKSPACE}/dist/npm")
           filename=$(PACK_INFO="$pack_info" node -e 'const data = JSON.parse(process.env.PACK_INFO); console.log(data[0].filename);')
           mv "dist/npm/${filename}" "dist/npm/codex-shell-tool-mcp-npm-${PACKAGE_VERSION}.tgz"
 
