@@ -337,6 +337,10 @@ jobs:
         env:
           STAGING_DIR: ${{ runner.temp }}/shell-tool-mcp
 
+      - name: Install JS dependencies in staging
+        run: |
+          pnpm install --frozen-lockfile --ignore-scripts --dir "${{ steps.staging.outputs.dir }}"
+
       - name: Ensure binaries are executable
         run: |
           set -euo pipefail
